@@ -5,6 +5,7 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.matcher.ViewMatchers.assertThat
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import kotlinx.coroutines.flow.Flow
 import org.hamcrest.CoreMatchers.equalTo
 import org.hamcrest.CoreMatchers.not
 import org.junit.After
@@ -53,7 +54,7 @@ class NoteDaoTest {
             Note(3,"note demo autre encore","Ceci est encore une  autre note de demo"))
 
         for (element in allNoteToTest) noteDao.insertNote(element)
-        val allNoteRetrieve : List<Note>  = noteDao.getAllNotes()
+        val allNoteRetrieve : Flow<List<Note>> = noteDao.getAllNotes()
 
         assertEquals(allNoteToTest, allNoteRetrieve)
     }

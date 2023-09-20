@@ -1,62 +1,102 @@
 package com.example.notesapp.ui.screen
 
-import android.graphics.drawable.Icon
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.notesapp.R
+import com.example.notesapp.data.Note
+import com.example.notesapp.ui.navigation.NavigationDestination
 import com.example.notesapp.ui.theme.NotesAppTheme
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.notesapp.ui.AppViewModelProvider
 
-class HomeScreen {
+object HomeDestination : NavigationDestination {
+    override val route = "home"
+    override val titleRes = R.string.app_name
+}
+@Composable
+fun HomeScreen(navigateToItemEntry: () -> Unit,
+               viewModel: HomeScreenViewModel = viewModel(factory = AppViewModelProvider.Factory)) {
+    HomeScreenBody(viewModel)
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreenBody(name: String, modifier: Modifier = Modifier) {
-    Scaffold(topBar = {},
+fun HomeScreenBody(viewModel: HomeScreenViewModel) {
+    val noteTest = Note(title = "Preview title",
+        content = "Preview Content zorhp ovevoevhlquhvflvuv fuhvq duvh",
+        dateModification = LocalDateTime.now())
+    val notesList = viewModel._homeScreenUiState.collectAsState().value.myNotes
+    Scaffold(topBar = { CustomisedTopBar() },
     floatingActionButton = {
-        FloatingActionButton(onClick = { }) {
-        Icon(Icons.Default.Add, contentDescription = "add new note" )
-    }
-    }
+        CustomisedFloatingButton() }
     ) { innerPadding ->
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .padding(innerPadding),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+
         ) {
-            Text(
-                modifier = Modifier.padding(8.dp),
-                text =
-                """
-                    This is an example of a scaffold. It uses the Scaffold composable's parameters to create a screen with a simple top app bar, bottom app bar, and floating action button.
-
-                    It also contains some basic inner content, such as this text.
-
-                    You have pressed the floating action button  times.
-                """.trimIndent(),
-            )
+            items(notesList)
+            {
+                OneNote(title = it.title, content= it.content, date = LocalDateTime.now())
+            }
         }
 
         
     }
 }
 
+
+@Composable
+fun OneNote(title : String, content : String = "", date : LocalDateTime )
+{
+    val paddingModifier = Modifier.padding(2.dp)
+    Card(shape = RoundedCornerShape(10.dp),
+        elevation = CardDefaults.cardElevation(5.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(5.dp)
+    ) {
+        Text(text = title,
+            fontWeight = FontWeight.Bold,
+            fontSize = 20.sp ,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = paddingModifier)
+        Text(text = date.format(DateTimeFormatter.ofPattern("dd/MM")).toString()+ " " +  content,
+            maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = paddingModifier)
+    }
+}
 @Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
+fun OneNotePreview() {
     NotesAppTheme {
-        HomeScreenBody("Android")
+        val noteTest = Note(title = "Preview title",
+            content = "Preview Content zorhp ovevoevhlquhvflvuv fuhvq duvh",
+            dateModification = LocalDateTime.now())
+        OneNote(noteTest.title,noteTest.content,noteTest.dateModification)
+    }
+}
+@Preview(showBackground = true)
+@Composable
+fun HomeScreenPreview() {
+    NotesAppTheme {
+        HomeScreen(navigateToItemEntry = {})
     }
 }
