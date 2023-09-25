@@ -1,7 +1,8 @@
 package com.example.notesapp.ui.screen
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -18,7 +19,7 @@ import androidx.compose.ui.unit.sp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CustomisedTopBar() {
+fun HomeScreenTopBar() {
     CenterAlignedTopAppBar(
         title = {
             Text(
@@ -49,19 +50,48 @@ fun CustomisedTopBar() {
 
 }
 @Composable
-fun CustomisedFloatingButton() {
-    FloatingActionButton(onClick = { }) {
-        Icon(Icons.Default.Add, contentDescription = "add new note")
+@OptIn(ExperimentalMaterial3Api::class)
+fun NewNoteTopBar() {
+    CenterAlignedTopAppBar(title = {
+        Text(text = "New Note",
+            fontWeight = FontWeight.Bold,
+            fontSize = 20.sp)},
+        navigationIcon = {
+            IconButton(onClick = { /* doSomething() */ }) {
+                Icon(
+                    imageVector = Icons.Filled.ArrowBack,
+                    contentDescription = "Localized description"
+                )
+            }
+        },
+
+
+
+
+
+
+    )
+}
+
+@Composable
+fun NewNoteFloatingButton(onClickAction: () -> Unit) {
+    FloatingActionButton(onClick = { onClickAction }) {
+        Icon(Icons.Default.Edit, contentDescription = "add new note")
     }
 }
 
 @Composable
 @Preview
-fun TopAppBarPreview(){
-    CustomisedTopBar()
+fun HomeScreenTopAppBarPreview(){
+    HomeScreenTopBar()
+}
+@Composable
+@Preview
+fun CreateNoteTopAppBarPreview(){
+    NewNoteTopBar()
 }
 @Composable
 @Preview
 fun FloatingButtonPreview(){
-    CustomisedFloatingButton()
+    //NewNoteFloatingButton()
 }

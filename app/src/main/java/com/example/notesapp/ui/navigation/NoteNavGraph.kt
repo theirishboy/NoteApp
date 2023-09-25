@@ -7,6 +7,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.notesapp.ui.screen.HomeDestination
 import com.example.notesapp.ui.screen.HomeScreen
+import com.example.notesapp.ui.screen.NewNoteDestination
+import com.example.notesapp.ui.screen.NewNoteScreen
 
 @Composable
 fun NoteNavHost(navController: NavHostController,
@@ -19,9 +21,18 @@ fun NoteNavHost(navController: NavHostController,
     ) {
         composable(route = HomeDestination.route) {
             HomeScreen(
-                navigateToItemEntry = { },
+                navigateToNewNote = {navController.navigate(NewNoteDestination.route)  },
+
+            )
+        }
+        composable(route = NewNoteDestination.route) {
+            NewNoteScreen(
+                navigateToNewNote = {navController.navigate(NewNoteDestination.route)  },
+                navigateBack = {navController.popBackStack()},
 
             )
         }
     }
+
+
 }
