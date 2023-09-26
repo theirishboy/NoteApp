@@ -7,12 +7,19 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.notesapp.NoteApplication
 import com.example.notesapp.ui.screen.HomeScreenViewModel
+import com.example.notesapp.ui.screen.NewNoteScreen
+import com.example.notesapp.ui.screen.NewNoteViewModel
 
 object AppViewModelProvider {
     val Factory = viewModelFactory {
         // Initializer for ItemEditViewModel
         initializer {
             HomeScreenViewModel(
+                noteApplication().container.noteRepository
+            )
+        }
+        initializer {
+            NewNoteViewModel(
                 noteApplication().container.noteRepository
             )
         }

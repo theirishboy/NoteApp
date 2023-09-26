@@ -27,7 +27,7 @@ fun NoteNavHost(navController: NavHostController,
         }
         composable(route = NewNoteDestination.route) {
             NewNoteScreen(
-                navigateToNewNote = {navController.navigate(NewNoteDestination.route)  },
+                navigateToNewNote = {navController.navigate(HomeDestination.route)  },
                 navigateBack = {navController.popBackStack()},
 
             )

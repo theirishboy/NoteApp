@@ -51,13 +51,13 @@ fun HomeScreenTopBar() {
 }
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-fun NewNoteTopBar() {
+fun NewNoteTopBar(navigateBack: () -> Unit) {
     CenterAlignedTopAppBar(title = {
         Text(text = "New Note",
             fontWeight = FontWeight.Bold,
             fontSize = 20.sp)},
         navigationIcon = {
-            IconButton(onClick = { /* doSomething() */ }) {
+            IconButton(onClick = navigateBack ) {
                 Icon(
                     imageVector = Icons.Filled.ArrowBack,
                     contentDescription = "Localized description"
@@ -75,7 +75,7 @@ fun NewNoteTopBar() {
 
 @Composable
 fun NewNoteFloatingButton(onClickAction: () -> Unit) {
-    FloatingActionButton(onClick = { onClickAction }) {
+    FloatingActionButton(onClick = onClickAction ) {
         Icon(Icons.Default.Edit, contentDescription = "add new note")
     }
 }
@@ -88,10 +88,10 @@ fun HomeScreenTopAppBarPreview(){
 @Composable
 @Preview
 fun CreateNoteTopAppBarPreview(){
-    NewNoteTopBar()
+    NewNoteTopBar({})
 }
 @Composable
 @Preview
 fun FloatingButtonPreview(){
-    //NewNoteFloatingButton()
+    NewNoteFloatingButton({})
 }

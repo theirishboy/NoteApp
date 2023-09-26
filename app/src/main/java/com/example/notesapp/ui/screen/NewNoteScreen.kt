@@ -8,31 +8,35 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.BottomAppBarDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.notesapp.R
+import com.example.notesapp.data.Note
 import com.example.notesapp.ui.AppViewModelProvider
 import com.example.notesapp.ui.navigation.NavigationDestination
 
@@ -43,34 +47,56 @@ object NewNoteDestination : NavigationDestination {
 @Composable
 fun NewNoteScreen(navigateToNewNote: () -> Unit,
                   navigateBack: () -> Unit,
-                  viewModel: NewNoteViewModel = viewModel(factory = AppViewModelProvider.Factory)
+                  newNoteViewModel: NewNoteViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
-    val newNoteUiState = viewModel._newNoteUiState.collectAsState()
 
-    NewNoteBody(newNoteUiState.value)
+    NewNoteBody(newNoteViewModel,navigateBack,navigateToNewNote)
 }
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class,
+    ExperimentalComposeUiApi::class
+)
 @Composable
-fun NewNoteBody(newNoteUiState: NewNoteUiState) {
-   Scaffold (topBar = { NewNoteTopBar() },
+fun NewNoteBody(
+    newNoteViewModel: NewNoteViewModel,
+    navigateBack: () -> Unit,
+    navigateToNewNote: () -> Unit
+) {
+    var title by  remember { mutableStateOf("") }
+    var content by remember{ mutableStateOf("") }
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val localFocus = LocalFocusManager.current
+    val saveResult by newNoteViewModel.saveResult.collectAsState()
+    when (saveResult) {
+            is SaveResult.Success -> {
+            val successData = (saveResult as SaveResult.Success).data
+            // Display success message or handle the data
+                navigateToNewNote()
+        }
+            is SaveResult.Failure -> {
+            val errorMessage = (saveResult as SaveResult.Failure).errorMessage
+            // Display error message or handle the failure
+            Text(text = "Error: $errorMessage", color = Color.Red)
+        }
+
+        else -> {}
+    }
+
+    Scaffold (topBar = { NewNoteTopBar(navigateBack) },
        bottomBar = {
            BottomAppBar(
                actions = {
-                   IconButton(onClick = { /* doSomething() */ }) {
-                       Icon(Icons.Filled.Check, contentDescription = "Localized description")
-                   }
-                   IconButton(onClick = { /* doSomething() */ }) {
+                   IconButton(onClick = { title = "";content = ""}) {
                        Icon(
-                           Icons.Filled.Edit,
+                           Icons.Filled.Refresh,
                            contentDescription = "Localized description",
                        )
                    }
                },
                floatingActionButton = {
                    FloatingActionButton(
-                       onClick = { /* do something */ },
+                       onClick = {newNoteViewModel.addNewNote(Note(title = title, content = content))},
                        containerColor = BottomAppBarDefaults.bottomAppBarFabColor,
                        elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
                    ) {
@@ -82,30 +108,36 @@ fun NewNoteBody(newNoteUiState: NewNoteUiState) {
        innerpadding->
            Column (modifier = Modifier.padding(innerpadding)){
               TextField(
-                   value = "Test",
-                   onValueChange = {},
+                   value = title,
+                   onValueChange = { title = it},
                    modifier = Modifier.fillMaxWidth(),
                    label = { Text(text = "Title")},
                    keyboardOptions = KeyboardOptions.Default.copy(
                        imeAction = ImeAction.Done
                    ),
                    keyboardActions = KeyboardActions(
-                       onDone = {}
+                       onDone = {
+                           localFocus.clearFocus()
+                           keyboardController?.hide()
+                       }
                    ),
                   shape = RectangleShape
                )
 
                TextField(
-                   value = "Content",
-                   onValueChange = {},
+                   value = content,
+                   onValueChange = {content = it},
                    modifier = Modifier.fillMaxSize(),
-                   label = { Text(text = "Title")},
+                   label = { Text(text = "Content")},
                    keyboardOptions = KeyboardOptions.Default.copy(
                        imeAction = ImeAction.Done
                    ),
                    keyboardActions = KeyboardActions(
-                       onDone = {}
-                   )
+                       onDone = {
+                           localFocus.clearFocus()
+                           keyboardController?.hide()
+                       }
+                   ),
                )
            }
 
@@ -118,6 +150,6 @@ fun NewNoteBody(newNoteUiState: NewNoteUiState) {
 @Preview
 @Composable
 fun NewNoteBodyPreview() {
-    NewNoteBody(NewNoteUiState())
+    //NewNoteBody(NewNoteUiState())
 
 }
