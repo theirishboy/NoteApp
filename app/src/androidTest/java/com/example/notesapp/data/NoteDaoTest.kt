@@ -8,7 +8,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.cancelAndJoin
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.hamcrest.CoreMatchers.hasItem
@@ -100,7 +99,7 @@ class NoteDaoTest {
 
         for (element in allNoteToTest) noteDao.insertNote(element)
 
-        noteDao.deleteById(1)
+        noteDao.deleteNote(1)
         val job = async(Dispatchers.IO) {
             noteDao.getAllNotes().collect {
                 assertThat(it, hasItem(resultExceptedWithDeleteElement))
