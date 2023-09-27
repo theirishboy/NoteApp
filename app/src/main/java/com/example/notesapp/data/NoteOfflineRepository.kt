@@ -8,4 +8,6 @@ class NoteOfflineRepository(private val noteDao: NoteDao) : NoteRepository {
     override fun modifyNote(note: Note) = noteDao.modifyNote(note)
     override fun deleteNote(note: Note) = noteDao.deleteNote(note)
 
+    override fun selectNoteById(id : Int): Flow<Note> = noteDao.findNoteById(id = id)
+
 }

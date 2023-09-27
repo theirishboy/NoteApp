@@ -3,6 +3,7 @@ package com.example.notesapp.data
 import kotlinx.coroutines.flow.Flow
 
 interface NoteRepository  {
+    fun selectNoteById(id : Int) :Flow<Note>
     fun getAllNotes(): Flow<List<Note>>
     fun insertNotes(note: Note)
 

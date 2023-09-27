@@ -33,19 +33,22 @@ import com.example.notesapp.ui.AppViewModelProvider
 
 object HomeDestination : NavigationDestination {
     override val route = "home"
+    const val ArgumentItemId = "itemId"
     override val titleRes = R.string.app_name
 }
 @Composable
-fun HomeScreen(navigateToNewNote: () -> Unit,
-               viewModel: HomeScreenViewModel = viewModel(factory = AppViewModelProvider.Factory)) {
-    HomeScreenBody(viewModel,navigateToNewNote)
+fun HomeScreen(
+    navigateToNewNote: () -> Unit,
+    navigateToModifyNote: (Any?) -> Unit,
+    viewModel: HomeScreenViewModel = viewModel(factory = AppViewModelProvider.Factory)) {
+    HomeScreenBody(viewModel,navigateToNewNote, navigateToModifyNote)
 }
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreenBody(viewModel: HomeScreenViewModel, navigateToNewNote: () -> Unit, ) {
-    val noteTest = Note(title = "Preview title",
-        content = "Preview Content zorhp ovevoevhlquhvflvuv fuhvq duvh",
-        dateModification = LocalDateTime.now())
+fun HomeScreenBody(
+    viewModel: HomeScreenViewModel,
+    navigateToNewNote: () -> Unit,
+    navigateToModifyNote: (Any?) -> Unit, ) {
     val notesList = viewModel._homeScreenUiState.collectAsState().value.myNotes
     Scaffold(topBar = { HomeScreenTopBar() },
     floatingActionButton = {
@@ -61,7 +64,7 @@ fun HomeScreenBody(viewModel: HomeScreenViewModel, navigateToNewNote: () -> Unit
         ) {
             items(notesList)
             {
-                OneNote(title = it.title, content= it.content, date = LocalDateTime.now())
+                OneNote(title = it.title, content = it.content, id = it.id, date = LocalDateTime.now(), navigateToModifyNote)
             }
         }
 
@@ -70,15 +73,23 @@ fun HomeScreenBody(viewModel: HomeScreenViewModel, navigateToNewNote: () -> Unit
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OneNote(title : String, content : String = "", date : LocalDateTime )
+fun OneNote(
+    title: String,
+    content: String = "",
+    id: Int,
+    date: LocalDateTime,
+    navigateToModifyNote: (Any?) -> Unit,
+)
 {
     val paddingModifier = Modifier.padding(2.dp)
     Card(shape = RoundedCornerShape(10.dp),
         elevation = CardDefaults.cardElevation(5.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(5.dp)
+            .padding(5.dp),
+        onClick = {navigateToModifyNote(id) }
     ) {
         Text(text = title,
             fontWeight = FontWeight.Bold,
@@ -97,13 +108,13 @@ fun OneNotePreview() {
         val noteTest = Note(title = "Preview title",
             content = "Preview Content zorhp ovevoevhlquhvflvuv fuhvq duvh",
             dateModification = LocalDateTime.now())
-        OneNote(noteTest.title,noteTest.content,noteTest.dateModification)
+        OneNote(noteTest.title, noteTest.content, noteTest.id,date = noteTest.dateModification) {}
     }
 }
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview() {
     NotesAppTheme {
-        HomeScreen(navigateToNewNote = {})
+        HomeScreen(navigateToNewNote = {}, navigateToModifyNote = {})
     }
 }

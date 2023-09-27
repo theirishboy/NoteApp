@@ -13,11 +13,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-data class NewNoteUiState(val title:String = "", val content : String = "")
 class NewNoteViewModel(private val noteRepository: NoteRepository) : ViewModel() {
-    private val _newNoteUiState = MutableStateFlow(NewNoteUiState())
-    private val uiState: StateFlow<NewNoteUiState> = _newNoteUiState.asStateFlow()
-
     private val _saveResult =
         MutableStateFlow<SaveResult<String>>(SaveResult.Init("wait"))
     val saveResult: StateFlow<SaveResult<String>> = _saveResult

@@ -23,7 +23,7 @@ interface NoteDao {
     fun getAllNotes(): Flow<List<Note>>
 
     @Query("SELECT * from NOTES WHERE id = :id")
-    fun findNoteById(id : Int) : Note
+    fun findNoteById(id : Int) : Flow<Note>
 
     @Update
     fun modifyNote(note: Note)

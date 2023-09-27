@@ -64,13 +64,24 @@ fun NewNoteTopBar(navigateBack: () -> Unit) {
                 )
             }
         },
-
-
-
-
-
-
-    )
+        )
+}
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+fun ModifyNoteTopBar(navigateBack: () -> Unit) {
+    CenterAlignedTopAppBar(title = {
+        Text(text = "Modify note",
+            fontWeight = FontWeight.Bold,
+            fontSize = 20.sp)},
+        navigationIcon = {
+            IconButton(onClick = navigateBack ) {
+                Icon(
+                    imageVector = Icons.Filled.ArrowBack,
+                    contentDescription = "Go back"
+                )
+            }
+        },
+        )
 }
 
 @Composable
