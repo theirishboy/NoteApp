@@ -23,6 +23,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusManager
@@ -36,36 +37,23 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.notesapp.R
 import com.example.notesapp.ui.AppViewModelProvider
 import com.example.notesapp.ui.navigation.NavigationDestination
+import kotlinx.coroutines.launch
 
 object ModifyNoteDestination : NavigationDestination {
     override val route = "ModifyNote"
     override val titleRes = R.string.app_name
+    const val noteIdArg = "noteId"
+    val routeWithArgs = "$route/{$noteIdArg}"
+
 }
 @Composable
 fun ModifyNoteScreen(
     navigateToNewNote: () -> Unit = {},
     navigateBack: () -> Unit = {},
     modifyNoteViewModel: ModifyNoteViewModel = viewModel(factory = AppViewModelProvider.Factory),
-    noteId: String?,
-    navigateOnDelete: () -> Unit
 ) {
-    val eventHandling by modifyNoteViewModel.eventHandling.collectAsState()
-    when(eventHandling){
-       is EventHandling.OnInit ->{
-           if (noteId != null ) {
-               modifyNoteViewModel.getNoteById(noteId.toInt())
-           }
-       }
-        is EventHandling.OnSuccessLoadingNote -> {
-            ModifyNoteBody(modifyNoteViewModel,navigateBack,navigateToNewNote)
-        }
-        is EventHandling.OnSuccessModifyOrDeleteNote ->{
-            navigateOnDelete()
-        }
+    ModifyNoteBody(modifyNoteViewModel,navigateBack,navigateToNewNote)
 
-        is EventHandling.OnFailure -> Text(text = (eventHandling as EventHandling.OnFailure).errorMessage)
-        else -> {}
-    }
 
 }
 
@@ -78,7 +66,9 @@ fun ModifyNoteBody(
     navigateToNewNote: () -> Unit
 ) {
     val localFocus = LocalFocusManager.current
-    val uiState by modifyNoteViewModel.modifyNoteHandling.collectAsState()
+    val uiState by modifyNoteViewModel.modifyNoteUiState.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
+
     Scaffold (topBar = { ModifyNoteTopBar(navigateBack) },
         bottomBar = {
             BottomAppBar(
@@ -89,7 +79,12 @@ fun ModifyNoteBody(
                             contentDescription = "Localized description",
                         )
                     }
-                    IconButton(onClick = {modifyNoteViewModel.deleteNote() }) {
+                    IconButton(onClick = {
+
+                        coroutineScope.launch {
+                            modifyNoteViewModel.deleteNote()
+                            navigateBack()
+                        }}) {
                         Icon(
                             Icons.Filled.Delete,
                             contentDescription = "Localized description",

@@ -1,51 +1,71 @@
 package com.example.notesapp.ui.screen
 
+import android.util.Log
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.notesapp.data.Note
 import com.example.notesapp.data.NoteRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.lang.NullPointerException
 
-data class ModifyNoteUiState(var note : Note)
-class ModifyNoteViewModel(private val noteRepository: NoteRepository): ViewModel() {
+data class ModifyNoteUiState(var note : Note = Note(title = "title", content = "content"))
+class ModifyNoteViewModel(savedStateHandle: SavedStateHandle,
+                          private val noteRepository: NoteRepository): ViewModel() {
 
-    private var _modifyNoteUiState = MutableStateFlow(ModifyNoteUiState(Note(title = "loading", content = "")))
-    val modifyNoteHandling : StateFlow<ModifyNoteUiState?> = _modifyNoteUiState
-
-    private val _eventHandling =
-        MutableStateFlow<EventHandling<String>>(EventHandling.OnInit("init"))
+    private var _eventHandling = MutableStateFlow<EventHandling<String>>(EventHandling.OnInit("init"))
     val eventHandling : StateFlow<EventHandling<String>> = _eventHandling
-    fun getNoteById(id: Int){
-        viewModelScope.launch {
-            withContext(Dispatchers.IO){
-                try {
-                    noteRepository.selectNoteById(id).collect{
-                        _modifyNoteUiState.update { item -> item.copy(note = it) }
-                        _eventHandling.value = EventHandling.OnSuccessLoadingNote("Operation Succeeded")
 
+    private val noteId: Int = checkNotNull(savedStateHandle[ModifyNoteDestination.noteIdArg])
+
+    var _modifyNoteUiState: MutableStateFlow<ModifyNoteUiState> = MutableStateFlow(ModifyNoteUiState())
+    val modifyNoteUiState : StateFlow<ModifyNoteUiState> = _modifyNoteUiState
+    init {
+        viewModelScope.launch {
+                try {
+                    noteRepository.selectNoteById(noteId).collect{
+                        _modifyNoteUiState.value = ModifyNoteUiState(it)
                     }
+                    _eventHandling.value = EventHandling.OnSuccessLoadingNote("Operation Succeeded")
                 }catch (nullException : NullPointerException){
                     _eventHandling.value = EventHandling.OnErrorId("Need to move on")
-                    println("id is null so we go back to main screen")
+                    Log.e("ModifyNoteViewModel", "Error retrieving note", nullException)
+
                 }
                 catch (e : Exception){
                     _eventHandling.value = EventHandling.OnFailure("Operation retrieve note failed with $e")
+                    Log.e("ModifyNoteViewModel", "Error retrieving note", e)
 
                 }
-            }
         }
     }
+
+
+    //    fun getNoteById(id: Int){
+//        viewModelScope.launch {
+//            withContext(Dispatchers.IO){
+//                try {
+//                    noteRepository.selectNoteById(id).collect{
+//                        _modifyNoteUiState.update { item -> item.copy(note = it) }
+//                        _eventHandling.value = EventHandling.OnSuccessLoadingNote("Operation Succeeded")
+//
+//                    }
+//                }catch (nullException : NullPointerException){
+//                    _eventHandling.value = EventHandling.OnErrorId("Need to move on")
+//                     Log.e("ModifyNoteViewModel", "Error retrieving note", nullException)
+//
+//                }
+//                catch (e : Exception){
+//                    _eventHandling.value = EventHandling.OnFailure("Operation retrieve note failed with $e")
+//                     Log.e("ModifyNoteViewModel", "Error retrieving note", e)
+//
+//                }
+//            }
+//        }
+//    }
     fun deleteNote(){
         viewModelScope.launch {
             withContext(Dispatchers.IO){
@@ -54,6 +74,7 @@ class ModifyNoteViewModel(private val noteRepository: NoteRepository): ViewModel
                     _eventHandling.value = EventHandling.OnSuccessModifyOrDeleteNote("Operation Succeeded")
                 }catch (e : Exception){
                     _eventHandling.value = EventHandling.OnFailure("Operation delete failed  with $e")
+                    Log.e("ModifyNoteViewModel", "Error deleting note", e)
 
                 }
             }
@@ -67,22 +88,18 @@ class ModifyNoteViewModel(private val noteRepository: NoteRepository): ViewModel
                     _eventHandling.value = EventHandling.OnSuccessModifyOrDeleteNote("Operation Succeeded")
                 }catch (e : Exception){
                     _eventHandling.value = EventHandling.OnFailure("Operation modification failed  with $e")
+                    Log.e("ModifyNoteViewModel", "Error modifying note", e)
 
                 }
             }
         }
     }
-    fun updateTitle(title : String){
-        _modifyNoteUiState.update { item -> item.copy(note = Note(id = item.note.id,title = title,
-            content = item.note.content,
-            dateModification = item.note.dateModification
-            )) }
+    fun updateTitle(title: String) {
+        _modifyNoteUiState.value = _modifyNoteUiState.value.copy(note = _modifyNoteUiState.value.note.copy(title = title))
     }
-    fun updateContent(content : String){
-        _modifyNoteUiState.update { item -> item.copy(note = Note(id = item.note.id,title = item.note.title,
-            content = content,
-            dateModification = item.note.dateModification
-            )) }
+
+    fun updateContent(content: String) {
+        _modifyNoteUiState.value = _modifyNoteUiState.value.copy(note = _modifyNoteUiState.value.note.copy(content = content))
     }
 
 }

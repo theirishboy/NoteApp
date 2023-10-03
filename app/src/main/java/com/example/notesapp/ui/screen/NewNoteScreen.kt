@@ -11,7 +11,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.BottomAppBarDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
@@ -24,8 +23,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
@@ -39,29 +38,27 @@ import com.example.notesapp.R
 import com.example.notesapp.data.Note
 import com.example.notesapp.ui.AppViewModelProvider
 import com.example.notesapp.ui.navigation.NavigationDestination
+import kotlinx.coroutines.launch
 
 object NewNoteDestination : NavigationDestination {
     override val route = "NewNote"
     override val titleRes = R.string.app_name
 }
 @Composable
-fun NewNoteScreen(navigateToNewNote: () -> Unit,
+fun NewNoteScreen(navigateToHomeScreen: () -> Unit,
                   navigateBack: () -> Unit,
                   newNoteViewModel: NewNoteViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
 
-    NewNoteBody(newNoteViewModel,navigateBack,navigateToNewNote)
+    NewNoteBody(newNoteViewModel,navigateBack,navigateToHomeScreen)
 }
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class,
-    ExperimentalComposeUiApi::class
-)
 @Composable
 fun NewNoteBody(
     newNoteViewModel: NewNoteViewModel,
     navigateBack: () -> Unit,
-    navigateToNewNote: () -> Unit
+    navigateToHomeScreen: () -> Unit
 ) {
     var title by  remember { mutableStateOf("") }
     var content by remember{ mutableStateOf("") }
@@ -70,19 +67,16 @@ fun NewNoteBody(
     val saveResult by newNoteViewModel.saveResult.collectAsState()
     when (saveResult) {
             is SaveResult.Success -> {
-            val successData = (saveResult as SaveResult.Success).data
-            // Display success message or handle the data
-                navigateToNewNote()
+                (saveResult as SaveResult.Success).data
         }
             is SaveResult.Failure -> {
             val errorMessage = (saveResult as SaveResult.Failure).errorMessage
-            // Display error message or handle the failure
             Text(text = "Error: $errorMessage", color = Color.Red)
         }
 
         else -> {}
     }
-
+val coroutineScope = rememberCoroutineScope()
     Scaffold (topBar = { NewNoteTopBar(navigateBack) },
        bottomBar = {
            BottomAppBar(
@@ -96,7 +90,12 @@ fun NewNoteBody(
                },
                floatingActionButton = {
                    FloatingActionButton(
-                       onClick = {newNoteViewModel.addNewNote(Note(title = title, content = content))},
+                       onClick = {
+
+                           coroutineScope.launch {
+                           newNoteViewModel.addNewNote(Note(title = title, content = content))
+                           navigateToHomeScreen()
+                           }},
                        containerColor = BottomAppBarDefaults.bottomAppBarFabColor,
                        elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
                    ) {
