@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.time.LocalDateTime
 
 data class ModifyNoteUiState(var note : Note = Note(title = "title", content = "content"))
 class ModifyNoteViewModel(savedStateHandle: SavedStateHandle,
@@ -43,44 +44,21 @@ class ModifyNoteViewModel(savedStateHandle: SavedStateHandle,
         }
     }
 
+        fun deleteNote(){
+            viewModelScope.launch {
+                withContext(Dispatchers.IO){
+                    try {
+                        noteRepository.deleteNote(_modifyNoteUiState.value.note)
+                        _eventHandling.value = EventHandling.OnSuccessModifyOrDeleteNote("Operation Succeeded")
+                    }catch (e : Exception){
+                        _eventHandling.value = EventHandling.OnFailure("Operation delete failed  with $e")
+                        Log.e("ModifyNoteViewModel", "Error deleting note", e)
 
-    //    fun getNoteById(id: Int){
-//        viewModelScope.launch {
-//            withContext(Dispatchers.IO){
-//                try {
-//                    noteRepository.selectNoteById(id).collect{
-//                        _modifyNoteUiState.update { item -> item.copy(note = it) }
-//                        _eventHandling.value = EventHandling.OnSuccessLoadingNote("Operation Succeeded")
-//
-//                    }
-//                }catch (nullException : NullPointerException){
-//                    _eventHandling.value = EventHandling.OnErrorId("Need to move on")
-//                     Log.e("ModifyNoteViewModel", "Error retrieving note", nullException)
-//
-//                }
-//                catch (e : Exception){
-//                    _eventHandling.value = EventHandling.OnFailure("Operation retrieve note failed with $e")
-//                     Log.e("ModifyNoteViewModel", "Error retrieving note", e)
-//
-//                }
-//            }
-//        }
-//    }
-    fun deleteNote(){
-        viewModelScope.launch {
-            withContext(Dispatchers.IO){
-                try {
-                    noteRepository.deleteNote(_modifyNoteUiState.value.note)
-                    _eventHandling.value = EventHandling.OnSuccessModifyOrDeleteNote("Operation Succeeded")
-                }catch (e : Exception){
-                    _eventHandling.value = EventHandling.OnFailure("Operation delete failed  with $e")
-                    Log.e("ModifyNoteViewModel", "Error deleting note", e)
-
+                    }
                 }
             }
         }
-    }
-    fun modifyNote(note: Note){
+        fun modifyNote(note: Note){
         viewModelScope.launch{
             withContext(Dispatchers.IO){
                 try {
@@ -100,6 +78,9 @@ class ModifyNoteViewModel(savedStateHandle: SavedStateHandle,
 
     fun updateContent(content: String) {
         _modifyNoteUiState.value = _modifyNoteUiState.value.copy(note = _modifyNoteUiState.value.note.copy(content = content))
+    }
+    fun updateDate() {
+        _modifyNoteUiState.value = _modifyNoteUiState.value.copy(note = _modifyNoteUiState.value.note.copy(dateModification = LocalDateTime.now()))
     }
 
 }

@@ -2,6 +2,7 @@ package com.example.notesapp.ui.screen
 
 import android.service.autofill.OnClickAction
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -28,8 +29,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -76,23 +79,49 @@ fun HomeScreenBody(
         }
     }
     ) { innerPadding ->
-            LazyColumn(
+        val sortedNotesList = notesList.sortedByDescending { it.dateModification }
+
+        LazyColumn(
                 modifier = Modifier
                     .padding(innerPadding),
 
                 ) {
-                items(notesList)
-                {
+                var lastCategory: String? = null
+
+                items(sortedNotesList) { note ->
+                    val category: String =
+                        when {
+                        note.dateModification.dayOfWeek == LocalDateTime.now().dayOfWeek -> "Today"
+                        note.dateModification.dayOfMonth - LocalDateTime.now().dayOfMonth == -1 -> "Yesterday"
+                        note.dateModification.monthValue - LocalDateTime.now().monthValue == -1 -> "LastMonth"
+                        note.dateModification.year - LocalDateTime.now().year <= -1 -> "Last Year"
+                        else -> "Other"
+                    }
+
+                    if (lastCategory != category) {
+                        Text(
+                            text = category,
+                            style = TextStyle(
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 20.sp, // Adjust the font size as needed
+                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp) // Adjust padding as needed
+                        )
+                        lastCategory = category
+                    }
+
                     OneNote(
-                        title = it.title,
-                        content = it.content,
-                        date = LocalDateTime.now(),
-                        modifier =  Modifier
+                        title = note.title,
+                        content = note.content,
+                        date = note.dateModification,
+                        modifier = Modifier
                             .combinedClickable(
-                                onClick = { navigateToModifyNote(it.id) },
+                                onClick = { navigateToModifyNote(note.id) },
                                 onLongClick = {
                                     haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                                    contextNoteId = it.id
+                                    contextNoteId = note.id
                                 },
                                 onLongClickLabel = "LongClick"
                             )

@@ -58,7 +58,6 @@ fun ModifyNoteScreen(
 }
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "StateFlowValueCalledInComposition")
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ModifyNoteBody(
     modifyNoteViewModel: ModifyNoteViewModel,
@@ -68,6 +67,7 @@ fun ModifyNoteBody(
     val localFocus = LocalFocusManager.current
     val uiState by modifyNoteViewModel.modifyNoteUiState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
+    modifyNoteViewModel.updateDate()
 
     Scaffold (topBar = { ModifyNoteTopBar(navigateBack) },
         bottomBar = {
@@ -76,7 +76,7 @@ fun ModifyNoteBody(
                     IconButton(onClick = navigateToNewNote) {
                         Icon(
                             Icons.Filled.Create,
-                            contentDescription = "Localized description",
+                            contentDescription = "Navigate To New Note",
                         )
                     }
                     IconButton(onClick = {
@@ -87,13 +87,14 @@ fun ModifyNoteBody(
                         }}) {
                         Icon(
                             Icons.Filled.Delete,
-                            contentDescription = "Localized description",
+                            contentDescription = "Delete Note",
                         )
                     }
                 },
                 floatingActionButton = {
                     FloatingActionButton(
-                        onClick = {modifyNoteViewModel.modifyNote(note = uiState!!.note)
+                        onClick = {
+                            modifyNoteViewModel.modifyNote(note = uiState.note)
                                   navigateBack()},
                         containerColor = BottomAppBarDefaults.bottomAppBarFabColor,
                         elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
